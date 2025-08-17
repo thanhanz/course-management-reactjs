@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import Register from './components/Register';
 import Login from './components/Login';
 import Header from './components/Layout/Header';
+import { HomePage } from './components/CourseCard';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -35,6 +36,7 @@ function App() {
         <Routes>
           <Route path='/login' element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path='/' element={<HomePage/>}/>
         </Routes>
       </BrowserRouter>
     </MyUserContext.Provider>

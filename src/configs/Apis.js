@@ -7,7 +7,8 @@ export const endpoints = {
     "login": "/login",
     "current-user":"/current-user",
     "logout": "/logout",
-    "register": "/register"
+    "register": "/register",
+    "get-all-courses": '/api/courses'
 };
 
 export const apiClient = () => axios.create({
