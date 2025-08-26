@@ -36,7 +36,7 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(userData));
  
       setUser(userData);
-
+      nav("/")
     } catch (err) {
       setError(err.message || 'Đăng nhập thất bại');
     } finally {

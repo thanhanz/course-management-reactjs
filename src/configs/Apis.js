@@ -8,7 +8,17 @@ export const endpoints = {
     "current-user":"/current-user",
     "logout": "/logout",
     "register": "/register",
-    "get-all-courses": '/api/courses'
+    "get-all-courses": '/api/courses',
+    "get-course-by-id": (course_id) => `/api/courses/${course_id}`,
+    "get-course-detail": (course_id) => `/api/courses/${course_id}/chapters`,
+    "get-lessons-by-chapter-id": (chapter_id) => `/api/lessons/chapters/${chapter_id}`,
+    "get-lesson-detail": (lesson_id) => `/api/lessons/${lesson_id}`,
+    "get-root-comments": (lesson_id) => `/api/lesson/${lesson_id}/comments`,
+    "get-replies": (parent_comment_id) => `/api/comments/${parent_comment_id}/replies`,
+    "create-payment-url": (course_id) => `/api/courses/${course_id}/checkout`,
+    "call-back-payment": '/api/courses/checkout/webhook',
+    "my-courses": '/api/courses/my-courses',
+
 };
 
 export const apiClient = () => axios.create({

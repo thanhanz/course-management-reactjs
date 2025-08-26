@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Spin, Typography } from 'antd';
+import { Button, Card, Spin, Typography } from 'antd';
 import { apiClient, endpoints } from '../configs/Apis';
+import { Icon, ShoppingCartIcon } from 'lucide-react';
+import { useCart } from '../configs/MyContext';
+import { useNavigate } from 'react-router-dom';
+
 
 const { Text, Title } = Typography;
 
@@ -9,18 +13,25 @@ const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN').format(price) + ' đ';
 };
 
-
 const CourseCard = ({ course }) => {
+    const { addToCart } = useCart()
+    const handleAddToCart = () => {
+        addToCart(course);
+    };
+
+    const nav = useNavigate();
     return (
         <Card
             hoverable
             className="course-card"
             style={{
-                backgroundColor: '#111827',
+                backgroundColor: '#ffffff',
                 border: '1px solid #1f2937',
-                width: '260px',
+                width: '280px',
                 borderRadius: '8px',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
             }}
             cover={
                 <img
@@ -31,61 +42,72 @@ const CourseCard = ({ course }) => {
                         height: '150px',
                         objectFit: 'cover'
                     }}
+                    onClick={() => nav(`/course/${course.id}`)}
                 />
             }
         >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {/* Course Name */}
-                <Title
-                    level={5}
-                    style={{
-                        color: 'white',
-                        margin: 0,
-                        fontSize: '15px',
-                        fontWeight: 600,
-                        lineHeight: '20px',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                    }}
-                >
-                    {course.name}
-                </Title>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    height: '100%' ,
 
-                {/* Lecture Name */}
-                <Text style={{ color: '#9ca3af', fontSize: '13px' }}>
-                    {course.lecture}
-                </Text>
+                }}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <Title
+                        level={5}
+                        style={{
+                            margin: 0,
+                            fontSize: '15px',
+                            fontWeight: 600,
+                            lineHeight: '20px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {course.name}
+                    </Title>
 
-                {/* Short Description */}
-                <Text
-                    style={{
-                        color: '#d1d5db',
-                        fontSize: '13px',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                    }}
-                >
-                    {course.desc}
-                </Text>
+                    <Text style={{ color: '#bd1d35ff', fontSize: '13px' }}>
+                      Giảng viên:  {course.lecture}
+                    </Text>
 
-                {/* Price */}
-                <div style={{ marginTop: '6px', marginLeft: '130px' }}>
+                    <Text
+                        style={{
+                            color: '#080809ff',
+                            fontSize: '13px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {course.desc}
+                    </Text>
+                </div>
+
+                <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Button
+                        type="primary"
+                        shape="round"
+                        icon={<ShoppingCartIcon />}
+                        onClick={handleAddToCart}
+                    />
                     <Text
                         strong
                         style={{
                             color: '#facc15',
-                            fontSize: '15px',
+                            fontSize: '15px'
                         }}
                     >
                         {formatPrice(course.price)}
                     </Text>
                 </div>
             </div>
-
             <style jsx>{`
         .course-card:hover img {
           transform: scale(1.05);
@@ -96,53 +118,4 @@ const CourseCard = ({ course }) => {
     );
 };
 
-const HomePage = () => {
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchCourse = async () => {
-            try {
-                const res = await apiClient().get(endpoints['get-all-courses']);
-                setCourses(res.data);
-            } catch (err) {
-                console.error("Lỗi khi fetch courses:", err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchCourse();
-    }, []);
-    if (loading) {
-        return (
-            <div style={{ display: "flex", justifyContent: "center", padding: "50px" }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
-
-    return (
-        <div style={{ padding: '24px', minHeight: '100vh' }}>
-            <Title level={2} style={{ marginBottom: '24px' }}>
-                Đề xuất khóa học
-            </Title>
-
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                    gap: '24px'
-                }}
-            >
-                {courses.length > 0 ? (
-                    courses.map((c) => <CourseCard key={c.id} course={c} />)
-                ) : (
-                    <p style={{ color: "white" }}>Chưa có khóa học nào</p>
-                )}
-            </div>
-        </div>
-    );
-};
-
-export { CourseCard, HomePage };
+export default CourseCard;
