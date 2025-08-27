@@ -38,6 +38,7 @@ const MyCourses = () => {
                         <Col xs={24} sm={12} md={8} lg={6} key={course.course_id}>
                             <Card
                                 onClick={() => nav(`/course/${course.course_id}`)}
+                                className="bg-green-200"
                                 hoverable
                                 cover={
                                     <img
@@ -48,6 +49,7 @@ const MyCourses = () => {
                                 }
                             >
                                 <Card.Meta
+                                  
                                     title={course.title
                                     }
                                     description={

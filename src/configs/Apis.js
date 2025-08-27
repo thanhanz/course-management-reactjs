@@ -18,6 +18,7 @@ export const endpoints = {
     "create-payment-url": (course_id) => `/api/courses/${course_id}/checkout`,
     "call-back-payment": '/api/courses/checkout/webhook',
     "my-courses": '/api/courses/my-courses',
+    "search-courses": `/api/courses/search`
 
 };
 
