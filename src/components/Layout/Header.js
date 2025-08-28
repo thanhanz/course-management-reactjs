@@ -5,6 +5,7 @@ import { Badge, Button, Drawer, Input } from "antd";
 import { ShoppingCartIcon, Text } from "lucide-react";
 import CheckoutPage from "../CheckoutPage";
 import { Navigate, useNavigate } from "react-router-dom";
+import Notifications from "../../components/firebase/Notification";
 const { Search } = Input;
 
 const Header = () => {
@@ -77,6 +78,7 @@ const Header = () => {
             />
           </div>
           <div className="flex items-center gap-4">
+            {user && user.role === 'lecturer' && <Notifications lecturerId={user.id}/>}
             {user ? (
               <>
                 <Badge count={cartCount} showZero>
