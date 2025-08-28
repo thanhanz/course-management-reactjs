@@ -2,14 +2,20 @@ import { ArrowLeft, Clock, FileText, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import Comments from "./Comment";
 import { apiClient, endpoints } from "../configs/Apis";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { wait } from "@testing-library/user-event/dist/utils";
 
 // Main LessonDetail Component
 const LessonDetail = () => {
     const [lessonDetail, setLessonDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const { lessonId } = useParams();
+    const [course, setCourse] = useState(null);
     const nav = useNavigate();
+    const location = useLocation();
+
+    const lesson = location.state?.lesson;
+
     useEffect(() => {
         const fetchLessonDetail = async () => {
             setLoading(true);
@@ -23,8 +29,20 @@ const LessonDetail = () => {
             } catch (err) {
                 console.error("Error to fetch lesson detail: ", err);
             }
-
+            console.log("Lesson state in LessonDetail: ", lesson);
         };
+        const fetchCourse = async () => {
+            try {
+
+                const res = await apiClient().get(endpoints['get-coures-by-lesson-id'](lessonId))
+                setCourse(res.data);
+                console.log("Courses  by lesson id: ", res.data);
+            } catch (err) {
+                console.error("Failed to fetch course info ", err)
+            }
+        }
+
+        fetchCourse();
         fetchLessonDetail();
     }, [lessonId]);
 
@@ -73,9 +91,7 @@ const LessonDetail = () => {
                 </div>
             </div>
 
-            {/* Main Content - Split Layout */}
             <div className="flex h-[calc(100vh-120px)]">
-                {/* Left Side - Video and Documents */}
                 <div className="w-2/3 flex flex-col bg-white pl-3 pr-3">
                     {/* Video Player */}
                     <div className="bg-black">
@@ -103,13 +119,13 @@ const LessonDetail = () => {
                         {lessonDetail?.pdf_url && (
                             <div className="p-4 bg-blue-50 rounded-lg">
                                 <h3 className="font-semibold text-blue-900 mb-2">Tài liệu</h3>
-                                    <button
-                                        onClick={() => downloadPDF(lessonDetail.pdf_url, `tai-lieu-${lessonDetail.title}.pdf`)}
-                                        className="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                                    >
-                                        <FileText className="w-4 h-4" />
-                                        <span>Tải tài liệu PDF</span>
-                                    </button>                                
+                                <button
+                                    onClick={() => downloadPDF(lessonDetail.pdf_url, `tai-lieu-${lessonDetail.title}.pdf`)}
+                                    className="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    <span>Tải tài liệu PDF</span>
+                                </button>
                             </div>
                         )}
 
@@ -126,7 +142,7 @@ const LessonDetail = () => {
 
                 {/* Right Side - Comments */}
                 <div className="w-1/3 bg-white border-l overflow-y-auto">
-                    <Comments lessonId={lessonId} />
+                    <Comments data={course} />
                 </div>
             </div>
         </div>

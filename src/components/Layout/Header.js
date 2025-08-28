@@ -1,10 +1,12 @@
 import { useContext, useState } from "react";
 import { apiClient, endpoints } from "../../configs/Apis";
 import { MyUserContext, useCart } from "../../configs/MyContext";
-import { Badge, Button, Drawer } from "antd";
+import { Badge, Button, Drawer, Input } from "antd";
 import { ShoppingCartIcon, Text } from "lucide-react";
 import CheckoutPage from "../CheckoutPage";
 import { Navigate, useNavigate } from "react-router-dom";
+import Notifications from "../../components/firebase/Notification";
+const { Search } = Input;
 
 const Header = () => {
   const { user, setUser } = useContext(MyUserContext);
@@ -28,17 +30,21 @@ const Header = () => {
       nav("/");
     }
   };
-  const handleBackToCart = () => {
-    nav("/")
-    setSelectedCourse(null);
-    setShowCart(true);
+
+   const handleSearch = (value) => {
+    if (value && value.trim() !== "") {
+      nav(`/?query=${encodeURIComponent(value)}`);
+    } else {
+      nav("/");
+    }
   };
+
 
   const handleCheckoutCourse = (course) => {
     setSelectedCourse(course);
     setShowCart(false);
     nav(`/checkout/${course.id}`, {
-     state: { backPath: '/'}
+      state: { backPath: '/' }
     })
   };
 
@@ -61,11 +67,18 @@ const Header = () => {
     <>
       <header className="bg-blue-600 text-white p-4 shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold">Bankhoahoc.com</h1>
+          <h1 onClick={() => nav("/")} className="text-xl font-bold">Bankhoahoc.com</h1>
 
+          <div className="w-1/3">
+            <Search
+              placeholder="Tìm kiếm khóa học..."
+              onSearch={handleSearch}
+              enterButton
+              allowClear
+            />
+          </div>
           <div className="flex items-center gap-4">
-
-
+            {user && user.role === 'lecturer' && <Notifications lecturerId={user.id}/>}
             {user ? (
               <>
                 <Badge count={cartCount} showZero>

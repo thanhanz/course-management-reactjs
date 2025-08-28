@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { apiClient, endpoints } from "../configs/Apis";
-import { Avatar } from "antd";
+import { Avatar, message } from "antd";
+import { sendNotification } from "./firebase/config";
+import { MyUserContext } from "../configs/MyContext";
+import moment from "moment";
 
-const Comments = ({ lessonId }) => {
+const Comments = ({ data }) => {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [replyTexts, setReplyTexts] = useState({});
@@ -11,6 +14,7 @@ const Comments = ({ lessonId }) => {
     const [showAllComments, setShowAllComments] = useState(false);
     const [collapsedReplies, setCollapsedReplies] = useState({});
     const [loadingReplies, setLoadingReplies] = useState({});
+    const {user} = useContext(MyUserContext);   
 
     // Fetch root comments
     useEffect(() => {
@@ -18,7 +22,7 @@ const Comments = ({ lessonId }) => {
             try {
                 setLoading(true);
 
-                const response = await apiClient().get(endpoints['get-root-comments'](lessonId));
+                const response = await apiClient().get(endpoints['get-root-comments'](data.lesson.id));
 
                 const initialCollapsedState = {};
                 response.data.forEach(comment => {
@@ -34,13 +38,14 @@ const Comments = ({ lessonId }) => {
                 setComments([]);
             } finally {
                 setLoading(false);
+                console.log("Data sent from LessonDetail to Comment: ", data);
             }
         };
 
-        if (lessonId) {
+        if (data.lesson.id) {
             fetchComments();
         }
-    }, [lessonId]);
+    }, [data.lesson.id]);
 
     const fetchReplies = async (commentId) => {
         try {
@@ -68,12 +73,16 @@ const Comments = ({ lessonId }) => {
         if (!newComment.trim()) return;
 
         try {
-
-            const response = await apiClient().post(endpoints["get-root-comments"](lessonId), {
+            const response = await apiClient().post(endpoints["get-root-comments"](data.lesson.id), {
                 content: newComment
             });
+            
+            sendNotification(
+                data.course.lecturer_id,
+                 `Học viên ${user.display_name} đã thêm một bình luận trong: Khóa học ${data.course.name} - Bài ${data.lesson.title}`
+            )
 
-            setComments([response.data, ...comments]);
+            setComments([response.data.data, ...comments]);
             setNewComment('');
         } catch (error) {
             console.error('Error adding comment:', error);
@@ -104,7 +113,7 @@ const Comments = ({ lessonId }) => {
 
         try {
 
-            const response = await apiClient().post(endpoints['get-root-comments'](lessonId), {
+            const response = await apiClient().post(endpoints['get-root-comments'](data.lesson.id), {
                 content: replyText,
                 parent_comment_id: parent_comment_id,
             });
@@ -148,16 +157,16 @@ const Comments = ({ lessonId }) => {
                          
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2 flex-wrap">
-                                    <h5 className={`font-medium text-sm ${reply.role == 'lecturer' ? 'text-green-600' : 'text-gray-800'}`}>
+                                    <h5 className={`font-medium text-sm ${reply.role === 'lecturer' ? 'text-green-600' : 'text-gray-800'}`}>
                                         {reply.author}
-                                        {reply.role == 'lecturer' && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded ml-2">Giảng viên</span>}
+                                        {reply.role === 'lecturer' && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded ml-2">Giảng viên</span>}
                                     </h5>
                                     {reply.replyTo && (
                                         <span className="text-xs text-gray-500">
                                             trả lời <span className="font-medium">{reply.replyTo}</span>
                                         </span>
                                     )}
-                                    <span className="text-xs text-gray-500">{reply.time}</span>
+                                    <span className="text-xs text-gray-500">{moment(reply.created_at).fromNow()}</span>
                                 </div>
                                 <p className="text-gray-700 text-sm mt-1 leading-relaxed break-words">{reply.content}</p>
                                 <button
@@ -255,11 +264,11 @@ const Comments = ({ lessonId }) => {
                                 src ={"https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg"}
                             /><div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2 flex-wrap">
-                                    <h4 className={`font-medium ${comment.role == 'lecturer' ? 'text-green-600' : 'text-gray-800'}`}>
+                                    <h4 className={`font-medium ${comment.role === 'lecturer' ? 'text-green-600' : 'text-gray-800'}`}>
                                         {comment.author}
-                                        {comment.role == 'lecturer' && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded ml-2">Giảng viên</span>}
+                                        {comment.role === 'lecturer' && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded ml-2">Giảng viên</span>}
                                     </h4>
-                                    <span className="text-xs text-gray-500">{comment.time}</span>
+                                    <span className="text-xs text-gray-500">{moment(comment.created_at).fromNow()}</span>
                                 </div>
                                 <p className="text-gray-700 mt-1 leading-relaxed break-words">{comment.content}</p>
 
