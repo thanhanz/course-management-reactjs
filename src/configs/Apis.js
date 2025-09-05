@@ -20,7 +20,9 @@ export const endpoints = {
     "my-courses": '/api/courses/my-courses',
     "search-courses": `/api/courses/search`,
     "get-coures-by-lesson-id":(lesson_id) => `api/lessons/${lesson_id}/courses`,
-
+    "get-exam-by-chapter-id": (chapter_id) => `/api/chapters/${chapter_id}/exams`,
+    "submit-exam": (exam_id) => `/api/exams/${exam_id}/submit`,
+    "get-user-answers": (exam_id) => `/api/exams/${exam_id}/questions`,
 };
 
 export const apiClient = () => axios.create({

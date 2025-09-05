@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { ChevronDown, ChevronRight, Play, FileText, Clock, ArrowLeft, CheckCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, Play, FileText, Clock, ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiClient, endpoints } from '../configs/Apis';
 import { MyCourseContext } from '../configs/MyCoursesContext';
@@ -11,7 +11,7 @@ const CourseDetail = () => {
     const [loading, setLoading] = useState(true);
     const nav = useNavigate();
     const { courseId } = useParams();
-    const {myCourses }= useContext(MyCourseContext);
+    const { myCourses } = useContext(MyCourseContext);
     const isPurchased = myCourses?.some(course => course.course_id === Number(courseId));
     const [course, setCourse] = useState(null);
 
@@ -20,7 +20,7 @@ const CourseDetail = () => {
             setLoading(true);
             try {
                 const res = await apiClient().get(endpoints['get-course-detail'](courseId));
-                
+
                 if (res.status === 403) {
                     alert("Bạn không có quyền truy cập khóa học này");
                     window.location.href = '/courses';
@@ -98,27 +98,27 @@ const CourseDetail = () => {
             <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">{course.name}</h1>
                 <p className="text-red-600">
-                   Được tạo bởi: {course.lecture}
+                    Được tạo bởi: {course.lecture}
                 </p>
                 <p className="text-gray-600 mt-2">
-                   {course.desc}
+                    {course.desc}
                 </p>
-                
+
                 <h1 className="text-2xl font-bold text-gray-800 mb-6 mt-10">Nội dung khóa học</h1>
-            
+
                 <div className="mb-3 flex items-center justify-between">
 
-                <p className="text-gray-600">
-                    {chapters.length} chương và {Object.values(lessons).flat().length} bài học
-                </p>
-                {!isPurchased && (
-                    <button
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4 "
-                        onClick={() => nav(`/checkout/${courseId}`, { state : { backPath: `/course/${courseId}`} })}
-                    >
-                        Mua khóa học này
-                    </button>
-                )}
+                    <p className="text-gray-600">
+                        {chapters.length} chương và {Object.values(lessons).flat().length} bài học
+                    </p>
+                    {!isPurchased && (
+                        <button
+                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4 "
+                            onClick={() => nav(`/checkout/${courseId}`, { state: { backPath: `/course/${courseId}` } })}
+                        >
+                            Mua khóa học này
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -152,34 +152,64 @@ const CourseDetail = () => {
 
                         {expandedChapters[chapter.chapter_id] && lessons[chapter.chapter_id] && (
                             <div className="bg-gray-50">
-                                {lessons[chapter.chapter_id].map((lesson) => (
-                                    <div
-                                        key={lesson.lesson_id}
-                                        onClick={() => handleLessonClick(lesson)}
-                                        className="p-4 pl-12 hover:bg-gray-100 cursor-pointer transition-colors border-l-4 border-transparent hover:border-blue-500"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-3">
-                                                {lesson.completed ? (
-                                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                                ) : (
-                                                    <Play className="w-5 h-5 text-blue-600" />
-                                                )}
-                                                <div>
-                                                    <h3 className="font-medium text-gray-800">{lesson.title}</h3>
-                                                    <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                                                        {lesson.study_document && (
-                                                            <div className="flex items-center space-x-1">
-                                                                <FileText className="w-4 h-4" />
-                                                                <span>Tài liệu</span>
-                                                            </div>
-                                                        )}
+                                {lessons[chapter.chapter_id].map((lesson) => {
+                                    const isChapterUnlocked = chapter.is_unlocked;
+
+                                    return (
+                                        <div
+                                            key={lesson.lesson_id}
+                                            onClick={() => isChapterUnlocked && handleLessonClick(lesson)}
+                                            className={`p-4 pl-12 transition-colors border-l-4 ${isChapterUnlocked
+                                                ? "cursor-pointer hover:bg-gray-100 hover:border-blue-500 border-transparent"
+                                                : "cursor-not-allowed opacity-60 border-gray-200"
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-3">
+                                                    {isChapterUnlocked ? (
+                                                        lesson.completed ? (
+                                                            <CheckCircle className="w-5 h-5 text-green-500" />
+                                                        ) : (
+                                                            <Play className="w-5 h-5 text-blue-600" />
+                                                        )
+                                                    ) : (
+                                                        <Lock className="w-5 h-5 text-gray-500" />
+                                                    )}
+                                                    <div>
+                                                        <h3 className="font-medium text-gray-800">{lesson.title}</h3>
+                                                        <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                                                            {lesson.study_document && (
+                                                                <div className="flex items-center space-x-1">
+                                                                    <FileText className="w-4 h-4" />
+                                                                    <span>Tài liệu</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    );
+                                })}
+                                <div
+                                    onClick={() => chapter.is_unlocked && nav(`/exam/${chapter.chapter_id}`)}
+                                    className={`p-4 pl-12 transition-colors border-l-4 ${chapter.is_unlocked
+                                            ? "cursor-pointer hover:bg-gray-100 hover:border-red-500 border-transparent"
+                                            : "cursor-not-allowed opacity-60 border-gray-200"
+                                        }`}
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        {chapter.is_unlocked ? (
+                                            <FileText className="w-5 h-5 text-red-600" />
+                                        ) : (
+                                            <Lock className="w-5 h-5 text-gray-500" />
+                                        )}
+                                        <h3 className="font-semibold">
+                                            Bài tập cuối chương
+                                        </h3>
                                     </div>
-                                ))}
+                                </div>
+
                             </div>
                         )}
                     </div>

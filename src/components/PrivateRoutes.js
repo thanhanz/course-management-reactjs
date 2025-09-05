@@ -7,6 +7,7 @@ import PaymentResult from "./PaymentResult";
 import MyCourses from "./MyCourses";
 import { MyCourseProvider } from "../configs/MyCoursesContext";
 import CheckoutPage from "./CheckoutPage";
+import ExamPage from "./ExamPage";
 
 const PrivateRoutes = () => {
     const { user } = useContext(MyUserContext);
@@ -22,6 +23,7 @@ const PrivateRoutes = () => {
                     <Route path='/payment-result' element={<PaymentResult />} />
                     <Route path='/checkout/:courseId' element={<CheckoutPage/>}/>
                     <Route path="/my-courses" element={<MyCourses />} />
+                    <Route path="/exam/:chapterId" element={<ExamPage />}/>
                 </Routes>
         </>
     );
